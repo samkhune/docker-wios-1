@@ -1,0 +1,56 @@
+version: "3.8"
+
+services:
+
+  nginx:
+    build: ./nginx/
+    container_name: nginx-container
+    ports:
+      - 80:80
+    links:
+      - php
+
+  php:
+    build: ./php/
+    container_name: php-container
+    expose:
+        - 9000
+    links:
+      - mysql
+  mysql:
+    build: ./mysql/
+    # image: mariadb/server:10.4
+    container_name: db
+    volumes_from:
+      - mysql_data
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: mydb
+    ports:
+      - 6033:3306
+
+  mysql_data:
+    image: mariadb/server:10.4
+    container_name: mysql-data-container
+    volumes: 
+      - /var/lib/mysql
+    command: "true"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: pma
+    links:
+      - mysql
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8081:80
+  redis:
+    build: ./redis/
+    container_name: redis
+    ports:
+      - "6379:6379"
+
